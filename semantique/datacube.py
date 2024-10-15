@@ -159,6 +159,8 @@ class Opendatacube(Datacube):
   """
 
   def __init__(self, layout = None, connection = None, tz = "UTC", **config):
+    # TODO: Put behind dask config flag check.
+    raise NotImplementedError("Not supported with Dask.")
     super(Opendatacube, self).__init__(layout)
     self.connection = connection
     self.tz = tz
@@ -448,6 +450,8 @@ class GeotiffArchive(Datacube):
   """
 
   def __init__(self, layout = None, src = None, tz = "UTC", **config):
+    # TODO: Put behind dask config flag check.
+    raise NotImplementedError("Not supported with Dask.")
     super(GeotiffArchive, self).__init__(layout)
     self.src = src
     self.tz = tz
@@ -877,6 +881,8 @@ class STACCube(Datacube):
         # Trim the array if requested.
         # This will remove dimension coordinates with only missing or invalid data.
         if self.config["trim"]:
+          # TODO: Put behind dask config flag check.
+            raise NotImplementedError("Not supported with Dask.")
             data = data.sq.trim()
         return data
 
@@ -958,7 +964,9 @@ class STACCube(Datacube):
             xy_coords="center",
             snap_bounds=False,
         )
-        data = data.compute(**(self.config["dask_params"] or {}))
+        
+        # TODO: Remove (or put behind config flag)
+        # data = data.compute(**(self.config["dask_params"] or {}))
 
         # mosaicking in case of temporal grouping
         # convert datetimes to daily granularity - resample by day
@@ -971,6 +979,8 @@ class STACCube(Datacube):
             return np.where(all_na, na_array, chosen)
 
         if self.config["group_by_solar_day"]:
+            # TODO: Put behind dask config flag check.
+            raise NotImplementedError("Not supported with Dask.")
             if len(data.time):
                 days = data.time.astype("datetime64[ns]").dt.floor("D")
                 if data.dtype.kind == "f":

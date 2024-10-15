@@ -49,7 +49,7 @@ def not_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "not")
     promoter.check()
   f = lambda x: np.where(pd.notnull(x), np.logical_not(x), np.nan)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -105,7 +105,7 @@ def is_missing_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "is_missing")
     promoter.check()
   f = lambda x: pd.isnull(x)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -148,7 +148,7 @@ def not_missing_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "not_missing")
     promoter.check()
   f = lambda x: pd.notnull(x)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -191,7 +191,7 @@ def absolute_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "absolute")
     promoter.check()
   f = lambda x: np.absolute(x)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -236,7 +236,7 @@ def ceiling_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "ceiling")
     promoter.check()
   f = lambda x: np.ceil(x)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -281,7 +281,7 @@ def cosine_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "cosine")
     promoter.check()
   f = lambda x: np.cos(x)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -329,7 +329,7 @@ def cosecant_(x, track_types = True, **kwargs):
     sin = np.sin(x)
     sin_nozero = np.where(np.equal(sin, 0), np.nan, sin)
     return np.divide(1, sin_nozero)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -377,7 +377,7 @@ def cotangent_(x, track_types = True, **kwargs):
     tan = np.tan(x)
     tan_nozero = np.where(np.equal(tan, 0), np.nan, tan)
     return np.divide(1, tan_nozero)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -420,7 +420,7 @@ def cube_root_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "cube_root")
     promoter.check()
   f = lambda x: np.cbrt(x)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -467,7 +467,7 @@ def exponential_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "exponential")
     promoter.check()
   f = lambda x: np.exp(x)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -512,7 +512,7 @@ def floor_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "floor")
     promoter.check()
   f = lambda x: np.floor(x)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -559,7 +559,7 @@ def natural_logarithm_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "natural_logarithm")
     promoter.check()
   f = lambda x: np.where(np.equal(x, 0), np.nan, np.log(x))
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -607,7 +607,7 @@ def secant_(x, track_types = True, **kwargs):
     cos = np.cos(x)
     cos_nozero = np.where(np.equal(cos, 0), np.nan, cos)
     return np.divide(1, cos_nozero)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -652,7 +652,7 @@ def sine_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "sine")
     promoter.check()
   f = lambda x: np.sin(x)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -695,7 +695,7 @@ def square_root_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "square_root")
     promoter.check()
   f = lambda x: np.sqrt(x)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -740,7 +740,7 @@ def tangent_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "tangent")
     promoter.check()
   f = lambda x: np.tan(x)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -785,7 +785,7 @@ def to_degrees_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "to_degrees")
     promoter.check()
   f = lambda x: np.rad2deg(x)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -830,7 +830,7 @@ def to_radians_(x, track_types = True, **kwargs):
     promoter = TypePromoter(x, function = "to_radians")
     promoter.check()
   f = lambda x: np.deg2rad(x)
-  out = xr.apply_ufunc(f, x, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -888,7 +888,7 @@ def add_(x, y, track_types = True, **kwargs):
     promoter.check()
   f = lambda x, y: np.add(x, y)
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -942,7 +942,7 @@ def divide_(x, y, track_types = True, **kwargs):
     promoter.check()
   f = lambda x, y: np.divide(x, np.where(np.equal(y, 0), np.nan, y))
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -996,7 +996,7 @@ def multiply_(x, y, track_types = True, **kwargs):
     promoter.check()
   f = lambda x, y: np.multiply(x, y)
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1050,7 +1050,7 @@ def power_(x, y, track_types = True, **kwargs):
     promoter.check()
   f = lambda x, y: np.power(x, y)
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1104,7 +1104,7 @@ def subtract_(x, y, track_types = True, **kwargs):
     promoter.check()
   f = lambda x, y: np.subtract(x, y)
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1162,7 +1162,7 @@ def normalized_difference_(x, y, track_types = True, **kwargs):
     promoter.check()
   f = lambda x, y: np.divide(np.subtract(x, y), np.add(x, y))
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1222,7 +1222,7 @@ def and_(x, y, track_types = True, **kwargs):
     y = utils.null_as_zero(y)
     return np.where(pd.notnull(x), np.logical_and(x, y), np.nan)
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1285,7 +1285,7 @@ def or_(x, y, track_types = True, **kwargs):
     y = utils.null_as_zero(y)
     return np.where(pd.notnull(x), np.logical_or(x, y), np.nan)
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1348,7 +1348,7 @@ def exclusive_or_(x, y, track_types = True, **kwargs):
     y = utils.null_as_zero(y)
     return np.where(pd.notnull(x), np.logical_xor(x, y), np.nan)
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1406,7 +1406,7 @@ def equal_(x, y, track_types = True, **kwargs):
     promoter.check()
   f = lambda x, y: np.where(pd.notnull(x), np.equal(x, y), np.nan)
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1461,7 +1461,7 @@ def in_(x, y, track_types = True, **kwargs):
       return np.where(pd.notnull(x), np.logical_and(a, b), np.nan)
     else:
       return np.where(pd.notnull(x), np.isin(x, y), np.nan)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1515,7 +1515,7 @@ def not_equal_(x, y, track_types = True, **kwargs):
     promoter.check()
   f = lambda x, y: np.where(pd.notnull(x), np.not_equal(x, y), np.nan)
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1570,7 +1570,7 @@ def not_in_(x, y, track_types = True, **kwargs):
       return np.where(pd.notnull(x), np.logical_or(a, b), np.nan)
     else:
       return np.where(pd.notnull(x), np.isin(x, y, invert = True), np.nan)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1628,7 +1628,7 @@ def greater_(x, y, track_types = True, **kwargs):
     promoter.check()
   f = lambda x, y: np.where(pd.notnull(x), np.greater(x, y), np.nan)
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1682,7 +1682,7 @@ def greater_equal_(x, y, track_types = True, **kwargs):
     promoter.check()
   f = lambda x, y: np.where(pd.notnull(x), np.greater_equal(x, y), np.nan)
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1736,7 +1736,7 @@ def less_(x, y, track_types = True, **kwargs):
     promoter.check()
   f = lambda x, y: np.where(pd.notnull(x), np.less(x, y), np.nan)
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1790,7 +1790,7 @@ def less_equal_(x, y, track_types = True, **kwargs):
     promoter.check()
   f = lambda x, y: np.where(pd.notnull(x), np.less_equal(x, y), np.nan)
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1928,7 +1928,7 @@ def after_(x, y, track_types = True, **kwargs):
     promoter = TypePromoter(x, y, function = "after")
     promoter.check()
   f = lambda x, y: np.where(pd.notnull(x), np.greater(x, np.nanmax(y)), np.nan)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -1991,7 +1991,7 @@ def before_(x, y, track_types = True, **kwargs):
     promoter = TypePromoter(x, y, function = "before")
     promoter.check()
   f = lambda x, y: np.where(pd.notnull(x), np.less(x, np.nanmin(y)), np.nan)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -2054,7 +2054,7 @@ def during_(x, y, track_types = True, **kwargs):
     a = np.greater_equal(x, np.nanmin(y))
     b = np.less_equal(x, np.nanmax(y))
     return np.where(pd.notnull(x), np.logical_and(a, b), np.nan)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -2114,7 +2114,7 @@ def assign_(x, y, track_types = True, **kwargs):
     promoter.check()
   f = lambda x, y: np.where(pd.notnull(x), y, utils.get_null(y))
   y = xr.DataArray(y).sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
@@ -2173,7 +2173,7 @@ def assign_at_(x, y, z, track_types = True, **kwargs):
   f = lambda x, y, z: np.where(np.logical_and(pd.notnull(z), z), y, x)
   y = xr.DataArray(y).sq.align_with(x)
   z = z.sq.align_with(x)
-  out = xr.apply_ufunc(f, x, y, z, keep_attrs = True)
+  out = utils.apply_ufunc(f, x, y, z, keep_attrs = True)
   if track_types:
     out = promoter.promote(out)
   return out
