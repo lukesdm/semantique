@@ -290,7 +290,7 @@ def parse_datetime_component(name, obj):
 
 def apply_ufunc(func, *args, **kwargs):
   # TODO: Remove this.
-  print(f"Applying {func} with args {args}")
+  print(f"Applying {func} with args:\n{args}")
   
   # TODO: put behind config flag
   return xr.apply_ufunc(func, *args, dask="parallelized", **kwargs)
