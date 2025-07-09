@@ -33,7 +33,7 @@ pip install "semantique[odcdb] @ git+https://github.com/USER/semantique@BRANCH"
 git clone https://github.com/ZGIS/semantique.git
 cd semantique
 # ([odcdb] can be omitted if ODC support isn't needed.) 
-pip install .[odcdb]
+pip install ".[odcdb]"
 ```
 
 3) If you prefer to use conda, you can create a `semantique` conda environment with the package itself and all dependencies installed, using the provided [environment.yml](environment.yml) file:
