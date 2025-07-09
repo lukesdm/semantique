@@ -18,7 +18,13 @@ At this moment the package can only be installed from source. This can be done i
 1) Using pip to install directly from GitHub:
 
 ```
-pip install git+https://github.com/ZGIS/semantique.git
+# Install without DB-backed OpenDataCube (ODC) support
+pip install "semantique @ git+https://github.com/USER/semantique@BRANCH"
+
+# Install with ODC support
+pip install "semantique[odcdb] @ git+https://github.com/USER/semantique@BRANCH"
+
+# (@BRANCH can be omitted to get the latest version from `main`.)
 ```
 
 2) Cloning the repository first and then install with pip:
@@ -26,7 +32,8 @@ pip install git+https://github.com/ZGIS/semantique.git
 ```
 git clone https://github.com/ZGIS/semantique.git
 cd semantique
-pip install .
+# ([odcdb] can be omitted if ODC support isn't needed.) 
+pip install .[odcdb]
 ```
 
 3) If you prefer to use conda, you can create a `semantique` conda environment with the package itself and all dependencies installed, using the provided [environment.yml](environment.yml) file:
