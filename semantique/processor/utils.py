@@ -1,5 +1,6 @@
 import rioxarray
 
+import dask.array as da
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -27,37 +28,18 @@ def get_null(x):
   else:
     return None
 
-def allnull(x, axis):
-  """Test whether all elements along a given axis in an array are null.
 
-  Parameters
-  ----------
-    x : :obj:`xarray.DataArray` or :obj:`numpy.array`
-      The input array.
-    axis : :obj:`int`
-      Axis along which the tests are performed.
+def allnull(x, axis=None):
+    """Check if all values are null - stays lazy"""
+    # TODO: Try with np ops
+    return da.all(da.isnan(x), axis=axis)
 
-  Return
-  -------
-    :obj:`numpy.array`
-
-  """
-  return np.equal(np.sum(pd.notnull(x), axis = axis), 0)
 
 def null_as_zero(x):
-  """Convert all null values in an array to 0.
+    """Replace nulls with zero - stays lazy"""
+    # TODO: Try with np ops
+    return da.where(da.isnan(x), 0, x)
 
-  Parameters
-  -----------
-    x : :obj:`xarray.DataArray` or :obj:`numpy.array`
-      The input array.
-
-  Return
-  ------
-    :obj:`numpy.array`
-
-  """
-  return np.where(pd.isnull(x), 0, x)
 
 def inf_as_null(x):
   """Convert all infinite values in an array to null values.

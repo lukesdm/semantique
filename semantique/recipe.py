@@ -100,7 +100,12 @@ class QueryRecipe(dict):
       cache=cache,
       **config
     )
-    return qp.optimize().execute()
+
+    with ComputeTracer(): # TODO: Remove / put behind config flag
+      result = qp.optimize().execute()
+
+    return result # qp.optimize().execute()
+    # return qp.optimize().execute()
 
   def visualise(self):
     """Visualise the recipe in a web browser.
@@ -111,3 +116,18 @@ class QueryRecipe(dict):
     to the browser.
     """
     show(self)
+
+
+# TODO: Remove / put behind config flag
+from dask.callbacks import Callback
+class ComputeTracer(Callback):
+    def __init__(self):
+        self.compute_count = 0
+    
+    def _start(self, dsk):
+        self.compute_count += 1
+        print(f"⚠️  COMPUTE #{self.compute_count} triggered!")
+        import traceback
+        traceback.print_stack()  # Shows where compute was called
+        print(f"   Graph size: {len(dsk)} tasks\n")
+

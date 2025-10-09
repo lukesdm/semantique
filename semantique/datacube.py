@@ -864,20 +864,26 @@ class STACCube(Datacube):
         metadata = self.lookup(*reference)
         # Load the data values from the EO data cube.
         data = self._load(metadata, extent)
-        if data.sq.is_empty:
-            raise exceptions.EmptyDataError(
-                f"Data layer '{reference}' does not contain data within the "
-                "specified spatio-temporal extent"
-            )
+        
+        # Removed for Dask. TODO: Put behind config flag.
+        # if data.sq.is_empty:
+        #     raise exceptions.EmptyDataError(
+        #         f"Data layer '{reference}' does not contain data within the "
+        #         "specified spatio-temporal extent"
+        #     )
+
         # Format loaded data.
         data = self._format(data, metadata, extent)
         # Mask invalid data.
         data = self._mask(data, metadata)
-        if data.sq.is_empty:
-            warnings.warn(
-                f"All values for data layer '{reference}' are invalid within the "
-                "specified spatio-temporal extent"
-            )
+        
+        # Removed for Dask. TODO: Put behind config flag.
+        # if data.sq.is_empty:
+        #     warnings.warn(
+        #         f"All values for data layer '{reference}' are invalid within the "
+        #         "specified spatio-temporal extent"
+        #     )
+
         # Trim the array if requested.
         # This will remove dimension coordinates with only missing or invalid data.
         if self.config["trim"]:
