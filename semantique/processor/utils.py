@@ -1,12 +1,16 @@
+import logging
 import rioxarray
 
 import dask.array as da
+from dask.callbacks import Callback
 import numpy as np
 import pandas as pd
 import xarray as xr
 
 from semantique import components
 from semantique.dimensions import TIME, X, Y
+
+logger = logging.getLogger(__name__)
 
 def get_null(x):
   """Return the appropriate nodata value for an array.
@@ -270,9 +274,34 @@ def parse_datetime_component(name, obj):
   return obj
 
 
-def apply_ufunc(func, *args, **kwargs):
-  # TODO: Remove this.
-  print(f"Applying {func} with args:\n{args}")
+# SHOULDDO: Find a better way to do this than with a global variable.
+DASK_LAZY = False
+
+def set_global_dask_lazy(dask_lazy):
+  """Sets the global flag to enable or disable lazy dask computation."""
+  global DASK_LAZY
+  if dask_lazy:
+    logger.info("Lazy dask computation enabled.")
+  else:
+    logger.info("Lazy dask computation disabled.")
+  DASK_LAZY = dask_lazy
   
-  # TODO: put behind config flag
-  return xr.apply_ufunc(func, *args, dask="parallelized", **kwargs)
+
+def apply_ufunc(func, *args, **kwargs):
+  logger.debug(f"Applying {func} with args:\n{args}")
+  
+  if DASK_LAZY:
+    return xr.apply_ufunc(func, *args, dask="parallelized", **kwargs)
+  else:
+    return xr.apply_ufunc(func, *args, **kwargs)
+
+class ComputeTracer(Callback):
+    def __init__(self):
+      self.compute_count = 0
+    
+    def _start(self, dsk):
+      self.compute_count += 1
+      print(f"⚠️  COMPUTE #{self.compute_count} triggered!")
+      import traceback
+      traceback.print_stack()  # Shows where compute was called
+      print(f"   Graph size: {len(dsk)} tasks\n")

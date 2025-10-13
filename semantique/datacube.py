@@ -117,11 +117,12 @@ class Opendatacube(Datacube):
         Trimming means that dimension coordinates for which all values are
         missing are removed from the array. The spatial dimensions are trimmed
         only at the edges, to maintain their regularity. Defaults to
-        :obj:`True`.
+        :obj:`True`. Note: Not currently supported with dask_lazy also enabled.
 
       * **group_by_solar_day** (:obj:`bool`): Should the time dimension be
         resampled to the day level, using solar day to keep scenes together?
-        Defaults to :obj:`True`.
+        Defaults to :obj:`True`. Note: Not currently supported with dask_lazy
+        also enabled.
 
       * **value_type_mapping** (:obj:`dict`): How do value type encodings in
         the layout map to the value types used by semantique?
@@ -159,8 +160,6 @@ class Opendatacube(Datacube):
   """
 
   def __init__(self, layout = None, connection = None, tz = "UTC", **config):
-    # TODO: Put behind dask config flag check.
-    raise NotImplementedError("Not supported with Dask.")
     super(Opendatacube, self).__init__(layout)
     self.connection = connection
     self.tz = tz
@@ -450,8 +449,6 @@ class GeotiffArchive(Datacube):
   """
 
   def __init__(self, layout = None, src = None, tz = "UTC", **config):
-    # TODO: Put behind dask config flag check.
-    raise NotImplementedError("Not supported with Dask.")
     super(GeotiffArchive, self).__init__(layout)
     self.src = src
     self.tz = tz
@@ -708,9 +705,13 @@ class STACCube(Datacube):
           resampled to the day level, using solar day to keep scenes together?
           Defaults to :obj:`True`.
 
+        * **dask_lazy** (:obj:`bool`): Whether lazy computation with Dask is enabled (experimental).
+        
+        * **dask_chunk_size** (:obj:`int`): Dask chunks will be size*size*1 grid cells (x*y*time).
+        
         * **dask_params** (:obj:`dict`): Parameters passed to the .compute() function
         when fetching data via the stackstac API. Can be used to control the parallelism
-        in fetching data. Defaults to :obj:`None`, i.e. to use the threaded scheduler as
+        in fetching data. Ignored if dask_lazy is enabled. Defaults to :obj:`None`, i.e. to use the threaded scheduler as
         set by dask as a default for arrays.
 
         * **reauth_individual** (:obj:`bool`): Should the items be resigned/reauthenticated
@@ -777,6 +778,8 @@ class STACCube(Datacube):
             "trim": True,
             "group_by_solar_day": True,
             "dask_params": None,
+            "dask_lazy": False,
+            "dask_chunk_size": 2048,
             "reauth_individual": False,
             "value_type_mapping": {
                 "nominal": "nominal",
@@ -865,30 +868,39 @@ class STACCube(Datacube):
         # Load the data values from the EO data cube.
         data = self._load(metadata, extent)
         
-        # Removed for Dask. TODO: Put behind config flag.
-        # if data.sq.is_empty:
-        #     raise exceptions.EmptyDataError(
-        #         f"Data layer '{reference}' does not contain data within the "
-        #         "specified spatio-temporal extent"
-        #     )
+        if not self.config["dask_lazy"]:
+            if data.sq.is_empty:
+                raise exceptions.EmptyDataError(
+                    f"Data layer '{reference}' does not contain data within the "
+                    "specified spatio-temporal extent"
+                )
+        else:
+          # Can't do emptiness check without reading data.
+          # TODO: Alternative implementation (it's still useful to have an exception here.)
+          pass 
+          
 
         # Format loaded data.
         data = self._format(data, metadata, extent)
         # Mask invalid data.
         data = self._mask(data, metadata)
         
-        # Removed for Dask. TODO: Put behind config flag.
-        # if data.sq.is_empty:
-        #     warnings.warn(
-        #         f"All values for data layer '{reference}' are invalid within the "
-        #         "specified spatio-temporal extent"
-        #     )
+        if not self.config["dask_lazy"]:
+          if data.sq.is_empty:
+              warnings.warn(
+                  f"All values for data layer '{reference}' are invalid within the "
+                  "specified spatio-temporal extent"
+              )
+        else:
+          # Can't do emptiness check without reading data.
+          # TODO: Alternative implementation (it's still useful to have a warning here.)
+          pass
 
         # Trim the array if requested.
         # This will remove dimension coordinates with only missing or invalid data.
         if self.config["trim"]:
-          # TODO: Put behind dask config flag check.
-            raise NotImplementedError("Not supported with Dask.")
+            if self.config["dask_lazy"]:
+                raise NotImplementedError("Not supported with Dask lazy computation.")
             data = data.sq.trim()
         return data
 
@@ -969,10 +981,12 @@ class STACCube(Datacube):
             errors_as_nodata=(RasterioIOError(".*"),),
             xy_coords="center",
             snap_bounds=False,
+            chunksize=self.config["dask_chunk_size"]
         )
         
-        # TODO: Remove (or put behind config flag)
-        # data = data.compute(**(self.config["dask_params"] or {}))
+        if not self.config["dask_lazy"]:
+            # Load data with dask (if available), even though full lazy computation isn't enabled.
+            data = data.compute(**(self.config["dask_params"] or {}))
 
         # mosaicking in case of temporal grouping
         # convert datetimes to daily granularity - resample by day
@@ -985,8 +999,8 @@ class STACCube(Datacube):
             return np.where(all_na, na_array, chosen)
 
         if self.config["group_by_solar_day"]:
-            # TODO: Put behind dask config flag check.
-            raise NotImplementedError("Not supported with Dask.")
+            if self.config["dask_lazy"]:
+              raise NotImplementedError("Group by solar day is not supported with Dask lazy computation.")
             if len(data.time):
                 days = data.time.astype("datetime64[ns]").dt.floor("D")
                 if data.dtype.kind == "f":
