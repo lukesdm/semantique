@@ -25,6 +25,7 @@ from urllib3 import Retry
 
 from semantique import exceptions
 from semantique.dimensions import TIME, SPACE, X, Y
+from semantique.processor.utils import set_global_dask_lazy
 
 class Datacube():
   """Base class for EO data cube configurations.
@@ -759,6 +760,11 @@ class STACCube(Datacube):
         params = self._default_config
         params.update(config)
         self.config = params
+        
+        if self.config["dask_lazy"]:
+          # Use dask lazy functions in subsequent operations
+          set_global_dask_lazy(True)
+          
 
     @property
     def src(self):

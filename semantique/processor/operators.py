@@ -1413,66 +1413,69 @@ def equal_(x, y, track_types = True, **kwargs):
   return out
 
 
-# TODO: Confirm behaviour is sensibe and lazy evaluation is kept
-def in_(x, y, track_types=True, **kwargs):
-    """Test if x is a member of set y.
+def in_(x, y, track_types = True, **kwargs):
+  """Test if x is a member of set y.
 
-    Parameters
-    ----------
-    x : xarray.DataArray
-        Array containing the operands at the left-hand side of each expression.
-    y : list or Interval
-        Operands at the right-hand side of each expression. Should be a set of
-        values, which remains constant among all evaluated expressions.
-    track_types : bool
-        Should the operator promote the value type of the output object,
-        based on the value type of the input objects?
+  Parameters
+  ----------
+    x : :obj:`xarray.DataArray`
+      Array containing the operands at the left-hand side of each
+      expression.
+    y : :obj:`list`
+      Operands at the right-hand side of each expression. Should be a set of
+      values, which remains constant among all evaluated expressions.
+    track_types : :obj:`bool`
+      Should the operator promote the value type of the output object, based
+      on the value type of the input objects?
     **kwargs:
-        Ignored.
+      Ignored.
 
-    Returns
-    -------
-    xarray.DataArray
-        An array with the same shape as ``x`` containing the results of all
-        evaluated expressions.
-    """
-    if track_types:
-        promoter = TypePromoter(x, y, function="in")
-        promoter.check()
+  Returns
+  -------
+    :obj:`xarray.DataArray`
+      An array with the same shape as ``x`` containing the results of all
+      evaluated expressions.
 
-    def f(x, **kwargs):
-        y = kwargs['y']
-        if isinstance(x, da.Array):
-            isnan = da.isnan
-            where = da.where
-            isin = da.isin
-        else:
-            isnan = np.isnan
-            where = np.where
-            isin = np.isin
+  Note
+  -----
+    When tracking value types, this operator uses the following type promotion
+    manual, with the first layer of keys being the supported value types of
+    ``x``, the second layer of keys being the supported value types of ``y``
+    given the value type of ``x``, and the corresponding value being the
+    promoted value type of the output.
 
-        if isinstance(y, Interval):
-            a = x >= y.lower
-            b = x <= y.upper
-            c = a & b
-            not_null = ~isnan(x)
-            return where(not_null, c, np.nan)
-        else:
-            not_null = ~isnan(x)
-            in_y = isin(x, y)
-            return where(not_null, in_y, np.nan)
+    .. exec_code::
+      :hide_code:
 
-    out = utils.apply_ufunc(
-        f,
-        x,
-        keep_attrs=True,
-        kwargs={'y': y},
-        output_dtypes=[x.dtype],
-    )
+      from semantique.processor.types import TYPE_PROMOTION_MANUALS
+      obj = TYPE_PROMOTION_MANUALS["in"]
+      obj.pop("__preserve_labels__")
+      print(obj)
 
-    if track_types:
-        out = promoter.promote(out)
-    return out
+  """
+  if track_types:
+    promoter = TypePromoter(x, y, function = "in")
+    promoter.check()
+  def f(x, y):
+    if isinstance(y, Interval):
+      a = np.greater_equal(x, y.lower)
+      b = np.less_equal(x, y.upper)
+      
+      return np.where(utils.notnull(x), np.logical_and(a, b), np.nan)
+    else:
+      return np.where(utils.notnull(x), np.isin(x, y), np.nan)
+
+  out = utils.apply_ufunc(
+      f,
+      x,
+      keep_attrs=True,
+      kwargs={'y': y},
+      output_dtypes=[x.dtype],
+  )
+
+  if track_types:
+    out = promoter.promote(out)
+  return out
 
 def not_equal_(x, y, track_types = True, **kwargs):
   """Test if x is not equal to y.

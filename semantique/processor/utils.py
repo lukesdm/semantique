@@ -33,16 +33,77 @@ def get_null(x):
     return None
 
 
-def allnull(x, axis=None):
-    """Check if all values are null - stays lazy"""
-    # TODO: Try with np ops
-    return da.all(da.isnan(x), axis=axis)
+def isnull(x):
+  """Return a boolean array whose elements indicate whether the corresponding
+  input element is NaN, None etc..
+
+  Parameters
+  ----------
+    x : :obj:`xarray.DataArray` or :obj:`numpy.array`
+      The input array.
+
+  """
+  
+  if DASK_LAZY:
+    # Doesn't trigger a computation, but may not work for all use cases
+    return da.isnull(x)
+  else:
+    # Continue to use this for backwards compatibility, for now
+    return pd.isnull(x)
+  
+
+def notnull(x):
+  """Return a boolean array whose elements indicate whether the corresponding
+  input element is *not* NaN, None etc..
+
+  Parameters
+  ----------
+    x : :obj:`xarray.DataArray` or :obj:`numpy.array`
+      The input array.
+
+  """
+  
+  if DASK_LAZY:
+    # Doesn't trigger a computation, but may not work for all use cases
+    return da.notnull(x)
+  else:
+    # Continue to use this for backwards compatibility, for now
+    return pd.notnull(x)
+
+
+def allnull(x, axis):
+  """Test whether all elements along a given axis in an array are null.
+
+  Parameters
+  ----------
+    x : :obj:`xarray.DataArray` or :obj:`numpy.array`
+      The input array.
+    axis : :obj:`int`
+      Axis along which the tests are performed.
+
+  Return
+  -------
+    :obj:`numpy.array`
+
+  """
+  
+  return np.equal(np.sum(notnull(x), axis = axis), 0)
 
 
 def null_as_zero(x):
-    """Replace nulls with zero - stays lazy"""
-    # TODO: Try with np ops
-    return da.where(da.isnan(x), 0, x)
+  """Convert all null values in an array to 0.
+
+  Parameters
+  -----------
+    x : :obj:`xarray.DataArray` or :obj:`numpy.array`
+      The input array.
+
+  Return
+  ------
+    :obj:`numpy.array`
+
+  """
+  return np.where(isnull(x), 0, x)
 
 
 def inf_as_null(x):
@@ -63,6 +124,7 @@ def inf_as_null(x):
   except TypeError:
     return x
   return np.where(is_inf, get_null(x), x)
+
 
 def datetime64_as_unix(x):
   """Convert datetime64 values in an array to unix time values.
