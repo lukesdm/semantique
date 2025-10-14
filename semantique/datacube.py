@@ -718,6 +718,8 @@ class STACCube(Datacube):
         * **reauth_individual** (:obj:`bool`): Should the items be resigned/reauthenticated
         before loading them? Defaults to False.
 
+        * **access_token** (:obj:`str`): Access token string (OAuth2) to be used in accessing the STAC href.
+
         * **value_type_mapping** (:obj:`dict`): How do value type encodings in
           the layout map to the value types used by semantique?
           Defaults to a one-to-one mapping: ::
@@ -787,6 +789,7 @@ class STACCube(Datacube):
             "dask_lazy": False,
             "dask_chunk_size": 2048,
             "reauth_individual": False,
+            "access_token": "",
             "value_type_mapping": {
                 "nominal": "nominal",
                 "ordinal": "ordinal",
@@ -967,27 +970,41 @@ class STACCube(Datacube):
 
         # return extent array as NaN in case of no data
         if not len(item_coll):
-            empty_arr = xr.full_like(extent, np.NaN)
+            empty_arr = xr.full_like(extent, np.nan)
             return empty_arr
+
+        stackstac_inputs = {
+            "assets": [metadata["name"]],
+            "resampling": resampler_func,
+            "bounds": s_bounds,
+            "epsg": epsg,
+            "resolution": res,
+            "fill_value": lyr_na,
+            "dtype": lyr_dtype,
+            "rescale": False,
+            "errors_as_nodata": (RasterioIOError(".*"),),
+            "xy_coords": "center",
+            "snap_bounds": False,
+            "chunksize": self.config["dask_chunk_size"]
+        }
 
         # reauth
         if self.config["reauth_individual"]:
             item_coll = STACCube._sign_metadata(item_coll)
 
+        # auth via token
+        if self.config["access_token"]:
+            gdal_env = stackstac.rio_env.LayeredEnv(
+                always=dict(
+                    GDAL_HTTP_AUTH="BEARER",
+                    GDAL_HTTP_BEARER=self.config["access_token"],
+                ), )
+
+            stackstac_inputs["gdal_env"] = gdal_env
+
         data = stackstac.stack(
             item_coll,
-            assets=[metadata["name"]],
-            resampling=resampler_func,
-            bounds=s_bounds,
-            epsg=epsg,
-            resolution=res,
-            fill_value=lyr_na,
-            dtype=lyr_dtype,
-            rescale=False,
-            errors_as_nodata=(RasterioIOError(".*"),),
-            xy_coords="center",
-            snap_bounds=False,
-            chunksize=self.config["dask_chunk_size"]
+            **stackstac_inputs
         )
         
         if not self.config["dask_lazy"]:
