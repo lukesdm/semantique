@@ -4,6 +4,7 @@ import xarray as xr
 import copy
 import datacube
 import datetime
+import odc.stac
 import os
 import planetary_computer as pc
 import pyproj
@@ -1398,9 +1399,8 @@ class DaskCube(Datacube):
         res = tuple(np.abs(extent.rio.resolution()).round(8))
         epsg = int(str(extent.rio.crs)[5:])
 
-        # retrieve resampler
+        # retrieve resampler name (odc.stac uses string names)
         resampler_name = self.config["resamplers"][metadata["type"]]
-        resampler_func = getattr(rasterio.enums.Resampling, resampler_name)
 
         # retrieve layer specific information
         lyr_dtype, lyr_na = self._get_dtype_na(metadata)
@@ -1441,41 +1441,36 @@ class DaskCube(Datacube):
             empty_arr = xr.full_like(extent, np.nan)
             return empty_arr
 
-        # TODO: Replace with odc.stac.load equivalents.
-        stackstac_inputs = {
-            "assets": [metadata["name"]],
-            "resampling": resampler_func,
-            "bounds": s_bounds,
-            "epsg": epsg,
-            "resolution": res,
-            "fill_value": lyr_na,
-            "dtype": lyr_dtype,
-            "rescale": False,
-            "errors_as_nodata": (RasterioIOError(".*"),),
-            "xy_coords": "center",
-            "snap_bounds": False,
-            "chunksize": self.config["dask_chunk_size"]
-        }
-
         # reauth
         if self.config["reauth_individual"]:
             item_coll = DaskCube._sign_metadata(item_coll)
 
-        # auth via token
+        # determine groupby strategy
+        groupby = "solar_day" if self.config["group_by_solar_day"] else "time"
+
+        # odc.stac.load parameters
+        chunk_size = self.config["dask_chunk_size"]
+        odc_stac_inputs = {
+            "bands": [metadata["name"]],
+            "resampling": resampler_name,
+            "bbox": s_bounds,
+            "crs": f"EPSG:{epsg}",
+            "resolution": res[0],  # odc.stac uses single resolution value
+            "nodata": lyr_na,
+            "dtype": lyr_dtype,
+            "chunks": {"x": chunk_size, "y": chunk_size},
+            "groupby": groupby,
+            "fail_on_error": False,
+        }
+
+        # auth via token - set GDAL environment variables
         if self.config["access_token"]:
-            gdal_env = stackstac.rio_env.LayeredEnv(
-                always=dict(
-                    GDAL_HTTP_AUTH="BEARER",
-                    GDAL_HTTP_BEARER=self.config["access_token"],
-                ), )
+            os.environ["GDAL_HTTP_AUTH"] = "BEARER"
+            os.environ["GDAL_HTTP_BEARER"] = self.config["access_token"]
 
-            stackstac_inputs["gdal_env"] = gdal_env
-
-        
-        # TODO: use odc.stac.load; Pass in group_by_solar_day
-        data = stackstac.stack(
+        data = odc.stac.load(
             item_coll,
-            **stackstac_inputs
+            **odc_stac_inputs
         )
 
         return data
@@ -1498,10 +1493,12 @@ class DaskCube(Datacube):
         return lyr_dtype, lyr_na
 
     def _format(self, data, metadata, extent):
-        # Step I: Set band as array name.
-        data.name = str(data["band"][0].values)
-        data = data.squeeze(dim="band", drop=True)
-        # Step II: Drop unnecessary dimensions & coordinates.
+        # Step I: Extract the band variable from the Dataset.
+        # odc.stac.load returns a Dataset with band names as variables.
+        band_name = metadata["name"]
+        data = data[band_name]
+        data.name = band_name
+        # Step II: Drop unnecessary coordinates.
         keep_coords = ["time", data.rio.x_dim, data.rio.y_dim]
         drop_coords = [x for x in list(data.coords) if x not in keep_coords]
         data = data.drop_vars(drop_coords)
