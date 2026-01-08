@@ -1261,6 +1261,7 @@ class DaskCube(Datacube):
         
         # Use dask lazy functions in subsequent operations
         set_global_dask_lazy(True)
+
           
 
     @property
@@ -1453,7 +1454,9 @@ class DaskCube(Datacube):
         odc_stac_inputs = {
             "bands": [metadata["name"]],
             "resampling": resampler_name,
-            "bbox": s_bounds,
+            # Bounding box in input CRS ('bbox' is EPSG:4326 only)
+            "x": (s_bounds[0], s_bounds[2]),
+            "y": (s_bounds[1], s_bounds[3]),
             "crs": f"EPSG:{epsg}",
             "resolution": res[0],  # odc.stac uses single resolution value
             "nodata": lyr_na,

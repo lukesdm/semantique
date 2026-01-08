@@ -1,5 +1,6 @@
 import logging
 
+from semantique.datacube import DaskCube
 from semantique.processor.utils import ComputeTracer, set_global_dask_lazy
 from semantique.processor.core import QueryProcessor, FakeProcessor
 from semantique.visualiser.visualise import show
@@ -106,7 +107,7 @@ class QueryRecipe(dict):
       **config
     )
     
-    dask_lazy = datacube.config.get("dask_lazy")
+    dask_lazy = isinstance(datacube, DaskCube)
     if dask_lazy:
       set_global_dask_lazy(True)
     else:
